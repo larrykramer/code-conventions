@@ -1,0 +1,1603 @@
+\documentclass{article}
+
+\usepackage{parskip}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\hypersetup{
+  pdftitle={Java Code Conventions},
+  pdfauthor={Larry Kramer},
+  pdfsubject={Java Code Conventions},
+  pdfkeywords={Java, code conventions, coding conventions, coding standards, style guide, best practices},
+  hidelinks,
+  linktoc=all
+}
+\lstset{
+  aboveskip=0.6\baselineskip,
+  belowskip=0.6\baselineskip,
+  basicstyle=\ttfamily\footnotesize,      % shrink just enough to fit
+  tabsize=4,
+  showstringspaces=false,                 % hide whitespace markers
+  xleftmargin=0pt,                        % ensure the same left edge on every page
+  xrightmargin=0pt,
+  breaklines=false,                       % NO line breaks
+  breakatwhitespace=false,
+  framexleftmargin=0pt,
+  columns=fullflexible,                   % allow tighter glyph boxes in \ttfamily
+  keepspaces=true                         % preserve indentation alignment
+}
+
+\newlist{notes}{enumerate}{1}
+\setlist[notes]{label=\textbf{Note:}, leftmargin=*}
+\newenvironment{note}[1]
+  {\begin{notes}\item #1}{\end{notes}}
+
+\lstnewenvironment{snippet}[1][]
+  {\noindent\minipage{\linewidth}}
+  {\endminipage}
+
+\begin{document}
+
+\begin{titlepage}
+  \centering
+  \vspace*{0.33\textheight}
+  {\Huge\bfseries Java\par}
+  \vspace{0.5em}
+  {\Huge\bfseries Code Conventions\par}
+  \vspace{1.5em}
+  {\large\bfseries \today\par}
+  \vfill
+\end{titlepage}
+
+\tableofcontents
+\clearpage
+
+\section{Introduction}
+
+This document outlines the standard Java coding conventions for all software development projects.
+The primary goal of these standards is to improve code readability, consistency, and long-term
+maintainability across the entire codebase.
+
+These conventions should be treated as guidelines, not as immutable rules. The ultimate goal is
+always clarity and maintainability. Developers are expected to apply these conventions judiciously.
+In specific contexts where adhering to a guideline would degrade code quality, developers should
+prioritize the clearer solution and be prepared to justify their deviations during code review.
+
+Adhering to these conventions ensures that all developers can easily understand, review, and
+contribute to the project.
+
+\subsection{Acknowledgments}
+
+These conventions are largely based on the
+\href{https://www.oracle.com/docs/tech/java/codeconventions.pdf}{Sun/Oracle
+\emph{Java Code Conventions} (1997 Edition)}, with specific additions and modernizations tailored to
+the demands of contemporary software engineering.
+
+\section{File Names}
+
+This section lists commonly used file suffixes and names.
+
+\subsection{File Suffixes}
+
+Frequently used file suffixes include:
+
+\begin{tabular}{ll}
+\hline
+File Type & Suffix \\
+\hline
+Java source & \texttt{.java} \\
+Java class file & \texttt{.class} \\
+XML document & \texttt{.xml} \\
+Markdown document & \texttt{.md} \\
+\hline
+\end{tabular}
+
+\subsection{Common File Names}
+
+Frequently used file names include:
+
+\begin{tabular}{p{0.2\linewidth} >{\raggedright\arraybackslash}p{0.8\linewidth}}
+\hline
+File Name & Use \\
+\hline
+\texttt{pom.xml} & The preferred name for the build file. \newline We use Apache Maven to build our
+  software. \\
+\texttt{README.md} & The preferred name for the file that summarizes the contents of a particular
+  directory. \\
+\hline
+\end{tabular}
+
+\section{File Organization}
+
+A file consists of several sections, separated by blank lines. Optionally, a comment can be used to
+identify each section.
+
+Java source files longer than 2,000 lines are cumbersome and should be avoided.
+
+For an example of a properly formatted Java program, see
+\hyperref[codeexample]{"\nameref*{codeexample}" on page~\pageref*{codeexample}}.
+
+\subsection{Java Source Files}
+
+Each Java source file contains a single public class or interface. When non-public classes and
+interfaces are associated with a public class, they can be placed in the same source file. The
+public class should be the first class or interface in the file.
+
+Java source files have the following ordering:
+
+\begin{enumerate}
+\item Beginning comments (see \hyperref[beginningcomments]{"\nameref*{beginningcomments}" on
+  page~\pageref*{beginningcomments}})
+\item Package and import statements (see \hyperref[packagesimports]{"\nameref*{packagesimports}" on
+  page~\pageref*{packagesimports}}); for example: \\
+\begin{snippet}
+import java.net.*;
+import java.util.*;
+
+import net.larrykramer.somepackage.SomeClass;
+\end{snippet}
+\item Class and interface declarations (see
+  \hyperref[classesinterfaces]{"\nameref*{classesinterfaces}" on page~\pageref*{classesinterfaces}})
+\end{enumerate}
+
+\subsubsection{Beginning Comments}
+\label{beginningcomments}
+
+All source files should begin with a C-style comment that lists a copyright notice. For example:
+
+\begin{snippet}
+/*
+ * Copyright notice
+ */
+\end{snippet}
+
+\subsubsection{Package and Import Statements}
+\label{packagesimports}
+
+The first non-comment line of most Java source files is a package statement. After the package
+statement, \texttt{import} statements can follow.
+
+Imports must be ordered in the following groups, with a blank line separating each group. Within
+each group, imports must be sorted alphabetically (ASCII order).
+
+\begin{enumerate}
+\item All module imports
+\item \texttt{java.*} and \texttt{javax.*} libraries
+\item All other non-static imports (third-party, project-specific)
+\item All static imports
+\end{enumerate}
+
+Use a wildcard import (e.g., \texttt{import java.util.*;}) only when \emph{four or more} distinct
+types are imported from the exact same package. The "four or more" rule also applies to the static
+members of a single, fully-qualified class. This rule applies to both standard (non-static) and
+static imports, but the groups are counted independently.
+
+\begin{snippet}
+// Group 1: Module import declarations
+import module java.logging;
+
+// Group 2: Standard Java libraries
+import java.io.File;
+import java.util.List;
+
+// Group 3: Other non-static imports
+import org.junit.Test;
+import org.mockito.*;
+import org.mockito.junit.MockitoJUnitRunner;
+
+// Group 4: All static imports
+import static java.lang.Math.max;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
+\end{snippet}
+
+\subsubsection{Class and Interface Declarations}
+\label{classesinterfaces}
+
+The following table describes the parts of a class or interface declaration, in the order that they
+should appear. See \hyperref[codeexample]{"\nameref*{codeexample}" on page~\pageref*{codeexample}}
+for an example that includes comments.
+
+\begingroup
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{
+  p{0.01\linewidth}|
+  >{\raggedright\arraybackslash}p{0.37\linewidth}
+  >{\raggedright\arraybackslash}p{0.52\linewidth}}
+\hline
+\# & Part of Class/Interface & Declaration Notes \\
+\hline
+\endhead
+\hline
+\endlastfoot
+{1} & Class/interface documentation comment (\texttt{/**...*/}) & See
+  \hyperref[doccomments]{"\nameref*{doccomments}" on page~\pageref*{doccomments}}
+  for information on what this comment should contain. \\
+2 & \texttt{class}, \texttt{interface}, \texttt{enum}, or \texttt{record} statement & \\
+3 & Class/interface implementation comment (\texttt{/*...*/}), if necessary & This comment should
+  contain any class-wide or interface-wide information that was not appropriate for the
+  class/interface documentation comment. \\
+4 & Class (\texttt{static}) variables & First the \texttt{public} class variables, then
+  \texttt{protected}, and then \texttt{private}. \\
+5 & Instance variables & First \texttt{public}, then \texttt{protected}, and then
+  \texttt{private}. \\
+6 & Constructors & \\
+7 & Methods & These methods should be grouped by functionality rather than by scope or
+  accessibility. For example, a private class method can be placed between two public instance
+  methods. The goal is to make reading and understanding the code easier. \\
+\end{longtable}
+\endgroup
+
+\section{Indentation}
+
+Four spaces should be used as the unit of indentation. Spaces are the only characters permitted
+for indentation; the use of tab characters is forbidden.
+
+\begin{note}
+Some tools may require tab characters for alignment within string literals or comments. This is a
+rare exception and does not apply to code indentation. If tabs are used in these specific cases,
+they must be configured to be equivalent to 8 spaces.
+\end{note}
+
+\subsection{Line Length}
+
+Avoid lines longer than 100 characters, since they are not handled well by many terminals and
+tools.
+
+\begin{note}
+Examples for use in documentation should have a shorter line length---generally no more than 90
+characters.
+\end{note}
+
+\subsection{Wrapping Lines}
+
+When an expression will not fit on a single line, break it according to these general principles:
+
+\begin{itemize}
+\item Break after a comma.
+\item Break before an operator.
+\item Prefer higher-level breaks to lower-level breaks.
+\item Align the new line with the beginning of the expression at the same level on the previous
+  line.
+\item If the above rules lead to confusing code or to code that is squished up against the right
+  margin, just indent 8 spaces instead.
+\end{itemize}
+
+Here are some examples of breaking method calls:
+
+\begin{snippet}
+function(longExpression1, longExpression2, longExpression3,
+        longExpression4, longExpression5);
+
+aVariable = function1(longExpression1,
+        function2(longExpression2,
+                longExpression3));
+\end{snippet}
+
+
+The following are two examples of breaking an arithmetic expression. The first is preferred, since
+the break occurs outside the parenthesized expression, which is at a higher level.
+
+\begin{snippet}
+longName1 = longName2 * (longName3 + longName4 - longName5)
+            + 4 * longName6; // PREFERRED
+
+longName1 = longName2 * (longName3 + longName4
+                         - longName5) + 4 * longName6; // AVOID!
+\end{snippet}
+
+The following is an example of indenting method declarations.
+
+\begin{snippet}
+// CONVENTIONAL INDENTATION
+someMethod(int anArg, Object anotherArg, String yetAnotherArg,
+        Object andStillAnother) {
+ ...
+}
+\end{snippet}
+
+Line wrapping for if statements should generally use the 8-space rule, since conventional (4-space)
+indentation can obscure the body. For example:
+
+\begin{snippet}
+// DO NOT USE THIS INDENTATION
+if ((condition1 && condition2)
+    || (condition3 && condition4)
+    || !(condition5 && condition6)) { // BAD WRAPS
+    doSomethingAboutIt(); // MAKES THIS LINE EASY TO MISS
+}
+
+// USE THIS INDENTATION INSTEAD
+if ((condition1 && condition2)
+        || (condition3 && condition4)
+        || !(condition5 && condition6)) {
+    doSomethingAboutIt();
+}
+
+// OR USE THIS
+if ((condition1 && condition2) || (condition3 && condition4)
+        || !(condition5 && condition6)) {
+    doSomethingAboutIt();
+}
+\end{snippet}
+
+Here are two acceptable ways to format ternary expressions:
+
+\begin{snippet}
+alpha = (aLongBooleanExpression) ? beta : gamma;
+
+alpha = (aLongBooleanExpression)
+        ? beta
+        : gamma;
+\end{snippet}
+
+\section{Comments}
+
+Java programs can have two kinds of comments: implementation comments and documentation comments.
+Implementation comments use the same syntax as C++, delimited by \texttt{/*...*/} and
+\texttt{//}. Documentation comments (known as "doc comments") are specific to Java and are delimited
+by \texttt{/**...*/}. Doc comments can be extracted to HTML files using the Javadoc tool.
+
+Implementation comments are meant for commenting out code or for comments about the particular
+implementation. Doc comments are meant to describe the specification of the code, from an
+implementation-free perspective, to be read by developers who might not necessarily have the source
+code at hand.
+
+Comments should be used to give an overview of the code and provide additional information that is
+not readily available in the code itself. Comments should contain only information that is relevant
+to reading and understanding the program. For example, information about how the corresponding
+package is built or in what directory it resides should not be included as a comment.
+
+Discussion of non-trivial or non-obvious design decisions is appropriate, but avoid duplicating
+information that is present in (and clear from) the code. It is too easy for redundant comments to
+become outdated. In general, avoid any comments that are likely to get out of date as the code
+evolves.
+
+\begin{note}
+The frequency of comments sometimes reflects poor quality code. When you feel compelled to add a
+comment, consider rewriting the code to make it clearer.
+\end{note}
+
+Comments should not be enclosed in large boxes drawn with asterisks or other characters. Comments
+should never include special characters such as form-feed and backspace.
+
+\subsection{Implementation Comment Formats}
+
+Programs can have four styles of implementation comments: block, single-line, trailing, and
+end-of-line.
+
+\subsubsection{Block Comments}
+\label{blockcomments}
+
+Block comments are used to provide descriptions of files, methods, data structures, and algorithms.
+Block comments should be used at the beginning of each file and before each method. They can also be
+used in other places, such as within methods. Block comments inside a function or method should be
+indented to the same level as the code they describe.
+
+Block comments should have an asterisk "\texttt{*}" at the beginning of each line except the first.
+
+\begin{snippet}
+/*
+ * Here is a block comment.
+ */
+\end{snippet}
+
+\subsubsection{Single-Line Comments}
+\label{singlelinecomments}
+
+Short comments can appear on a single line indented to the level of the code that follows. If a
+comment cannot be written in a single line, it should follow the block comment format (see
+\hyperref[blockcomments]{section~\ref*{blockcomments} on page~\pageref*{blockcomments}}). Here is
+an example of a single-line comment in Java code (also see
+\hyperref[doccomments]{"\nameref*{doccomments}" on page~\pageref*{doccomments}}):
+
+\begin{snippet}
+if (condition) {
+    /* Handle the condition. */
+    ...
+}
+\end{snippet}
+
+\subsubsection{Trailing Comments}
+
+Very short comments can appear on the same line as the code they describe, but should be shifted far
+enough to separate them from the statement. If more than one short comment appears in a chunk of
+code, they should all be indented to the same column. Avoid the assembly-language style of placing a
+trailing comment on every line of executable code. Here is an example of a trailing comment in Java
+code (also see \hyperref[doccomments]{"\nameref*{doccomments}" on page~\pageref*{doccomments}}):
+
+\begin{snippet}
+if (a == 2) {
+    return true; /* special case */
+} else {
+    return isPrime(a); /* works only for odd a */
+}
+\end{snippet}
+
+\subsubsection{End-Of-Line Comments}
+
+The \texttt{//} comment delimiter begins a comment that continues to the newline. It can comment out
+a complete line or only a partial line. It should not be used on consecutive multiple lines for text
+comments; however, it can be used in consecutive multiple lines for commenting out sections of
+code. Examples of all three styles follow:
+
+\begin{snippet}
+if (foo > 1) {
+    // Do a double-flip.
+    ...
+} else {
+    return false; // Explain why here.
+}
+//if (bar > 1) {
+//
+//    // Do a triple-flip.
+//    ...
+//} else {
+//    return false;
+//}
+\end{snippet}
+
+\subsection{Documentation Comments}
+\label{doccomments}
+
+\begin{note}
+See \hyperref[codeexample]{"\nameref*{codeexample}" on page~\pageref*{codeexample}} for examples of
+the comment formats described here.
+\end{note}
+
+For further details, see "How to Write Doc Comments for Javadoc", which includes information on the
+doc comment tags (\texttt{@return}, \texttt{@param}, \texttt{@see}):
+
+\begin{quote}
+\mbox{\small\url{https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html}\par}
+\end{quote}
+
+Doc comments describe Java classes, interfaces, constructors, methods, and fields. Each doc comment
+is set inside the comment delimiters \texttt{/**...*/}, with one comment per API. This comment
+should appear just before the declaration:
+
+\begin{snippet}
+/**
+ * The Example class provides ...
+ */
+class Example { ...
+\end{snippet}
+
+Note that the declaration lines for classes and interfaces are not indented, while their members
+are. The first line of a doc comment (\texttt{/**}) for classes and interfaces is not indented;
+subsequent doc comment lines each have 1 space of indentation (to vertically align the
+asterisks). Members, including constructors, have 4 spaces for the first doc comment line and 5
+spaces thereafter.
+
+If you need to give information about a class, interface, variable, or method that is not
+appropriate for documentation, use an implementation block comment (see
+\hyperref[blockcomments]{section~\ref*{blockcomments} on page~\pageref*{blockcomments}}) or
+single-line (see \hyperref[singlelinecomments]{section~\ref*{singlelinecomments} on
+page~\pageref*{singlelinecomments}} comment immediately \emph{after} the declaration. For example,
+details about the implementation of a class belong in an implementation block comment following the
+class statement, not in the class doc comment.
+
+Doc comments should not be positioned inside a method or constructor definition block, because Java
+associates documentation comments with the first declaration \emph{after} the comment.
+
+\section{Declarations}
+
+\subsection{Number Per Line}
+
+One declaration per line is recommended since it encourages commenting. In other words,
+
+\begin{snippet}
+int level; // indentation level
+int size;  // size of table
+\end{snippet}
+
+is preferred over
+
+\begin{snippet}
+int level, size;
+\end{snippet}
+
+Do not put different types on the same line. Example:
+
+\begin{snippet}
+int foo, fooarray[]; // WRONG!
+\end{snippet}
+
+\begin{note}
+The examples above use one space between the type and the identifier. As an acceptable alternative,
+you can use additional spaces to align the variable names and comments.
+
+\begin{snippet}
+int    level;        // indentation level
+int    size;         // size of table
+Object currentEntry; // currently selected table entry
+\end{snippet}
+\end{note}
+
+\subsection{Placement}
+
+Place declarations as close to their first use as possible. Declarations at the beginning of a
+block (a block is any code surrounded by curly braces "\texttt{\{}" and "\texttt{\}}") are also
+acceptable.
+
+\begin{snippet}
+void myMethod() {
+    int int1;            // beginning of method block
+    if (condition) {
+        ...
+        int int2 = ...;  // declared on first use
+        ...
+    }
+}
+\end{snippet}
+
+The one exception to the rule is indices of a \texttt{for} loop, which can be declared within the
+\texttt{for} statement itself.
+
+\begin{snippet}
+for (int i = 0; i < maxLoops; i++) { ...
+\end{snippet}
+
+Avoid local declarations that hide declarations at higher levels. For example, do not declare the
+same variable name in an inner block:
+
+\begin{snippet}
+int count;
+...
+func() {
+    if (condition) {
+        int count = ...; // AVOID!
+        ...
+    }
+    ...
+}
+\end{snippet}
+
+\subsection{Initialization}
+
+Try to initialize local variables where they are declared. The only reason not to initialize a
+variable where it is declared is if the initial value depends on some computation occurring first.
+
+\subsection{Local-Variable Type Inference (\texttt{var})}
+
+Avoid using local-variable type inference (\texttt{var}) except in specific situations where the
+initializer makes the type unambiguous and the explicit type would be excessively verbose. The
+explicit type is preferred in most cases because \texttt{var} can obscure the code's clarity.
+
+Do not use \texttt{var} where the type is not obvious from the right-hand side of the expression.
+
+\begin{snippet}
+var activeConnections = new ArrayList<>();          // VERY WRONG! INFERRED AS ArrayList<Object>.
+
+var activeConnections = new ArrayList<String>();    // AVOID!
+
+List<String> activeConnections = new ArrayList<>(); // OK
+\end{snippet}
+
+Using \texttt{var} is appropriate when an explicit type declaration is excessively long.
+
+\begin{snippet}
+// AVOID! REDUNDANT, VERBOSE, AND REPEATS RHS TYPE INFORMATION!
+Set<Map.Entry<String, CopyOnWriteArrayList<Consumer<Object>>>> entries = map.entrySet();
+
+var entries = map.entrySet(); // OK
+\end{snippet}
+
+It is also acceptable to use \texttt{var} in enhanced \texttt{for} loops and
+\texttt{try-with-resources} statements.
+
+\begin{snippet}
+for (var user : users) {
+    ...
+}
+
+try (var reader = new BufferedReader(new FileReader("file.txt"))) {
+    ...
+}
+\end{snippet}
+
+\subsection{Class and Interface Declarations}
+
+When coding Java classes and interfaces, the following formatting rules should be followed:
+
+\begin{itemize}
+\item No space between a method name and the parenthesis "\texttt{(}" starting its parameter list.
+\item Open brace "\texttt{\{}" appears at the end of the same line as the declaration statement.
+\item Closing brace "\texttt{\}}" starts a line by itself, indented to match its corresponding
+  opening statement. \\
+\begin{snippet}
+class Sample extends Object {
+    int ivar1;
+    int ivar2;
+
+    Sample(int i, int j) {
+        ivar1 = i;
+        ivar2 = j;
+    }
+
+    void emptyMethod() {
+    }
+
+    ...
+}
+\end{snippet}
+\item Methods are separated by a blank line.
+\end{itemize}
+
+\section{Statements}
+
+\subsection{Simple Statements}
+
+Each line should contain at most one statement. Example:
+
+\begin{snippet}
+argv++; argc--; // AVOID!
+\end{snippet}
+
+\subsection{Compound Statements}
+\label{compoundstatements}
+
+Compound statements are statements that contain lists of statements enclosed in braces
+"\texttt{\{ statements \}}". See the following sections for examples.
+
+\begin{itemize}
+\item The enclosed statements should be indented one more level than the compound statement.
+\item The opening brace should be at the end of the line that begins the compound statement; the
+  closing brace should begin a line and be indented to the beginning of the compound statement.
+\item Braces are used around all statements, even singletons, when they are part of a control
+  structure, such as an \texttt{if-else} or \texttt{for} statement. This makes it easier to add
+  statements without accidentally introducing bugs due to forgetting to add braces.
+\end{itemize}
+
+\subsection{\texttt{return} Statements}
+
+A \texttt{return} statement with a value should not use parentheses unless they make the return
+value more obvious in some way. Example:
+
+\begin{snippet}
+return;
+
+return myDisk.size();
+
+return (Disk) (isHDD ? new HardDiskDrive() : new FloppyDrive());
+\end{snippet}
+
+\subsection{\texttt{if}, \texttt{if-else}, \texttt{if-else-if-else} Statements}
+
+The \texttt{if-else} class of statements should have the following form.
+
+\begin{snippet}
+if (condition) {
+    statements;
+}
+
+if (condition) {
+    statements;
+} else {
+    statements;
+}
+
+if (condition) {
+    statements;
+} else if (condition) {
+    statements;
+} else if (condition) {
+    statements;
+} else {
+    statements;
+}
+\end{snippet}
+
+\begin{note}
+\texttt{if} statements always use braces "\texttt{\{\}}". Avoid the following error-prone form:
+
+\begin{snippet}
+if (condition)  // AVOID! THIS OMITS THE BRACES {}!
+    statement;
+\end{snippet}
+\end{note}
+
+\subsection{\texttt{for} Statements}
+
+A \texttt{for} statement should have the following form:
+
+\begin{snippet}
+for (initialization; condition; update) {
+    statements;
+}
+\end{snippet}
+
+An empty \texttt{for} statement (one in which all the work is done in the initialization, condition,
+and update clauses) can have the following form:
+
+\begin{snippet}
+for (initialization; condition; update);
+\end{snippet}
+
+When using comma-separated initializers or updaters in a \texttt{for} statement, avoid the
+complexity of using more than three variables. If needed, use separate statements before the
+\texttt{for} loop (for the initialization clause) or at the end of the loop (for the update clause).
+
+\subsection{\texttt{while} Statements}
+
+A \texttt{while} statement should have the following form:
+
+\begin{snippet}
+while (condition) {
+    statements;
+}
+\end{snippet}
+
+An empty \texttt{while} statement can have the following form:
+
+\begin{snippet}
+while (condition);
+\end{snippet}
+
+\subsection{\texttt{do-while} Statements}
+
+A \texttt{do-while} statement should have the following form:
+
+\begin{snippet}
+do {
+    statements;
+} while (condition);
+\end{snippet}
+
+\subsection{\texttt{switch} Statements}
+
+A \texttt{switch} statement should have the following \emph{preferred modern form}, with the arrow
+syntax (\texttt{->}), to avoid fall-through logic and improve readability.
+
+\begin{snippet}
+switch (condition) {
+    case ABC -> statement;
+    case DEF -> statement;
+    case XYZ -> statement;
+    default -> statement;
+}
+\end{snippet}
+
+A \texttt{switch} statement can have the following traditional form:
+
+\begin{snippet}
+switch (condition) {
+    case ABC:
+        statements;
+        /* falls through */
+    case DEF:
+        statements;
+        break;
+    case XYZ:
+        statements;
+        break;
+    default:
+        statements;
+        break;
+}
+\end{snippet}
+
+Every time a case falls through (i.e., does not include a \texttt{break} statement), add a comment
+where the \texttt{break} statement would normally appear. This is shown in the preceding code
+example with the \texttt{/* falls through */} comment.
+
+Every traditional \texttt{switch} statement should include a default case. The \texttt{break} in the
+default case is redundant, but it prevents a fall-through error if another case is later added.
+
+\subsection{\texttt{try-catch}, \texttt{try-with-resources} Statements}
+
+A \texttt{try-catch} statement should have the following format:
+
+\begin{snippet}
+try {
+    statements;
+} catch (ExceptionClass e) {
+    statements;
+} finally {
+    statements;
+}
+\end{snippet}
+
+A \texttt{try-with-resources} statement should have the following format:
+
+\begin{snippet}
+try (resource-specification) {
+    statements;
+} catch (ExceptionClass e) {
+    statements;
+} finally {
+    statements;
+}
+\end{snippet}
+
+A \texttt{try-catch} statement in which the exception object is not used should use an unnamed
+variable (\texttt{\_}) to make the intent clear.
+
+\begin{snippet}
+try {
+    statements;
+} catch (ExceptionClass _) {
+    // The exception is intentionally ignored.
+}
+\end{snippet}
+
+\section{White Space}
+
+\subsection{Blank Lines}
+
+Blank lines improve readability by setting off sections of code that are logically related.
+
+Two blank lines should always be used in the following circumstances:
+
+\begin{itemize}
+\item Between top-level type declarations (e.g., classes, interfaces, enums) within the same source
+  file.
+\end{itemize}
+
+One blank line should always be used in the following circumstances:
+
+\begin{itemize}
+\item Between sections of a source file.
+\item Between methods.
+\item Between the local variables in a method and its first statement.
+\item Before a block (see \hyperref[blockcomments]{section~\ref*{blockcomments} on
+  page~\pageref*{blockcomments}}) or single-line (see
+  \hyperref[singlelinecomments]{section~\ref*{singlelinecomments} on
+  page~\pageref*{singlelinecomments}}) comment except before the first statement of a compound
+  statement (see \hyperref[compoundstatements]{section~\ref*{compoundstatements} on
+  page~\pageref*{compoundstatements}}).
+\item Between logical sections inside a method to improve readability.
+\end{itemize}
+
+\subsection{Blank Spaces}
+
+Blank spaces should be used in the following circumstances:
+
+\begin{itemize}
+\item A keyword followed by a parenthesis should be separated by a space. Example: \\
+\begin{snippet}
+while (true) {
+    ...
+}
+\end{snippet}
+
+  Note that a blank space should not be used between a method name and its opening parenthesis.
+  This helps to distinguish keywords from method calls.
+%
+\item A blank space should appear after commas in argument lists.
+%
+\item All binary operators except for "\texttt{.}" and "\texttt{::}" should be separated from their
+  operands by spaces. Blank spaces should never separate unary operators such as unary minus,
+  increment ("\texttt{++}"), and decrement ("\texttt{--}") from their operands.
+  Example: \\
+\begin{snippet}
+a += c + d;
+a = (a + b) / (c * d);
+
+while ((d = s++) != 0) {
+    n++;
+}
+System.out.print("size is " + foo + "\n");
+\end{snippet}
+%
+\item The arrow operator (\texttt{->}) in lambda and switch expressions should be surrounded by
+  blank spaces. Example: \\
+\begin{snippet}
+  s -> s.length()
+
+  case "FOO" -> statement;
+\end{snippet}
+%
+\item The expressions in a \texttt{for} statement should be separated by blank spaces. Example: \\
+\begin{snippet}
+for (expr1; expr2; expr3)
+\end{snippet}
+%
+\item Casts should be followed by a blank space. Example: \\
+\begin{snippet}
+myMethod((byte) aNum, (Object) x);
+myFunc((int) (cp + 5), ((int) (i + 3)) + 1);
+\end{snippet}
+\end{itemize}
+
+\section{Naming Conventions}
+
+Naming conventions make programs more understandable by making them easier to read.
+
+They can also convey information about the function of the identifier---for example, whether it is a
+constant, package, or class---which can be helpful in understanding the code.
+
+The conventions given in this section are high-level.
+
+\begingroup
+\renewcommand{\arraystretch}{1.5}
+\begin{longtable}{
+  >{\raggedright\arraybackslash}p{0.125\linewidth}|
+  >{\raggedright\arraybackslash}p{0.4\linewidth}
+  >{\raggedright\arraybackslash}p{0.375\linewidth}}
+\hline
+Identifier Type & Rules for Naming & Example \\
+\hline
+\endhead
+\hline
+\endlastfoot
+%
+Classes & Class names should be nouns, in mixed case with the first letter of each internal word
+  capitalized. Try to keep your class names simple and descriptive. Use whole words—avoid acronyms
+  and abbreviations (unless the abbreviation is much more widely used than the long form, such as
+  URL or HTML). &
+  \lstinline`class NetworkManager;` \newline
+  \lstinline`class Session;` \newline
+  \lstinline`class EventQueue;` \\
+%
+Interfaces & Interface names should be capitalized like class names. &
+  \lstinline`interface Listener` \\
+%
+Records & Record names should be capitalized like class names. &
+   \lstinline`record ConnectionDetail` \\
+%
+Enums & Enum names should be capitalized like class names. &
+   \lstinline`enum NetworkStatus` \\
+%
+Methods & Methods should be verbs, in mixed case with the first letter lowercase, with the first
+  letter of each internal word capitalized. &
+  \lstinline`openConnection(url);` \newline
+  \lstinline`getActiveConnectionCount();` \newline
+  \lstinline`logStatus(status);` \\
+%
+Variables & Instance, class, and local variables are written in mixed case with a lowercase first
+  letter. Internal words start with capital letters.
+  \par\vspace{0.25\baselineskip plus 2pt}
+  Variable names should be short yet meaningful. The choice of a variable name should be
+  mnemonic---that is, designed to indicate to the casual observer the intent of its use.
+  One-character variable names should be avoided except for temporary "throwaway" variables. Common
+  names for temporary variables are \texttt{i}, \texttt{j}, \texttt{k}, \texttt{m}, and \texttt{n}
+  for integers; \texttt{c}, \texttt{d}, and \texttt{e} for characters. When a variable is
+  syntactically required but intentionally unused, an unnamed variable (\texttt{\_}) should be
+  used instead of a name like \texttt{ignored}. &
+  \lstinline`int maxConnections;` \newline
+  \lstinline`char c;` \newline
+  \lstinline`int i;` \\
+%
+Constants & The names of variables declared as class constants should be all uppercase with words
+  separated by underscores ("\_"). &
+  \lstinline`static final int MAX_CONNECTIONS = 10;` \newline
+  \lstinline`static final int TIMEOUT_FACTOR = 2;` \newline
+  \lstinline`static final int MAX_LENGTH = 1024;` \\
+\end{longtable}
+\endgroup
+
+\section{Programming Practices}
+
+\subsection{Providing Access to Instance and Class Variables}
+
+Do not make any instance or class variable public without good reason. Often, instance variables
+do not need to be explicitly set or accessed directly—often that happens as a side effect of method
+calls.
+
+One example of appropriate public instance variables is the case where the class is essentially a
+mutable data structure, with no behavior. In other words, if you would have used a C-style
+\texttt{struct} instead of a class (if Java supported structs), then it is appropriate to make the
+class's instance variables public.
+
+For the immutable equivalent, where a class acts as a simple data structure with no behavior, modern
+Java provides a more suitable construct. In these cases, you should prefer using a record type,
+which is specifically designed to transparently and safely hold immutable data.
+
+\subsection{Referring to Class Variables and Methods}
+
+Avoid using an object to access a class (\texttt{static}) variable or method. Use a class name
+instead. For example:
+
+\begin{snippet}
+classMethod();           // OK
+AClass.classMethod();    // OK
+anObject.classMethod();  // AVOID!
+\end{snippet}
+
+\subsection{Constants}
+
+Numerical constants (literals) should not be coded directly, except for \texttt{-1}, \texttt{0},
+and \texttt{1}, which can appear in a \texttt{for} loop as counter values.
+
+\subsection{Variable Assignments}
+
+Avoid assigning several variables to the same value in a single statement. It is hard to read.
+Example:
+
+\begin{snippet}
+fooBar.fChar = barFoo.lchar = 'c'; // AVOID!
+\end{snippet}
+
+Do not use the assignment operator in a context where it can be easily confused with the equality
+operator. Example:
+
+\begin{snippet}
+if (aBoolean = isPrime(b)) {  // AVOID! ASSIGNS INSTEAD OF COMPARES!
+    ...
+}
+\end{snippet}
+
+should be written as
+
+\begin{snippet}
+if (aBoolean == isPrime(b)) {
+    ...
+}
+\end{snippet}
+
+Do not use embedded assignments in an attempt to improve run-time performance. This is the
+job of the compiler, and besides, it rarely actually helps. Example:
+
+\begin{snippet}
+d = (a = b + c) + r;  // AVOID!
+\end{snippet}
+
+should be written as
+
+\begin{snippet}
+a = b + c;
+d = a + r;
+\end{snippet}
+
+\subsection{Miscellaneous Practices}
+
+\subsubsection{Parentheses}
+
+Avoid using redundant parentheses when operator precedence is clear and the intended order of
+operations is unambiguous. While parentheses are essential for controlling expression evaluation,
+their overuse can clutter code and impair readability without adding clarity.
+
+Only add parentheses when they are required to enforce a specific order of operations that overrides
+the language's default precedence, or in complex expressions where the precedence could be ambiguous
+to other programmers. For standard logical and arithmetic expressions, you should rely on the
+well-established rules of precedence.
+
+\begin{snippet}
+if (a == b && c == d)     // RIGHT
+
+System.out.println("Total: "
+        + ((a > 0 || b > 0) ? (a + b) + " dollars" : "N/A"));  // RIGHT
+
+if ((a == b) && (c == d)) // AVOID!
+\end{snippet}
+
+\subsubsection{Returning Values}
+
+Try to make the structure of your program match the intent. Example:
+
+\begin{snippet}
+if (booleanExpression) {
+    return true;
+} else {
+    return false;
+}
+\end{snippet}
+
+should instead be written as
+
+\begin{snippet}
+return booleanExpression;
+\end{snippet}
+
+Similarly,
+
+\begin{snippet}
+if (condition) {
+    return x;
+}
+return y;
+\end{snippet}
+
+should be written as
+
+\begin{snippet}
+return condition ? x : y;
+\end{snippet}
+
+\subsubsection{Expressions before ? in the Conditional Operator}
+
+If an expression containing a binary operator appears before the "\texttt{?}" in the ternary
+\texttt{?:} operator, it should be parenthesized. Example:
+
+\begin{snippet}
+(x >= 0) ? x : -x
+\end{snippet}
+
+\subsubsection{Special Comments}
+
+Use \texttt{XXX} in a comment to flag something that is bogus but works. Use \texttt{FIXME} to flag
+something that is bogus and broken. Use \texttt{TODO} to flag a planned enhancement or a piece of
+missing but non-critical functionality.
+
+\section{Modern Language Features}
+
+This section covers conventions related to features introduced in modern versions of the Java
+language.
+
+\subsection{Lambda Expressions}
+
+Lambda expressions provide a concise syntax for representing anonymous functions and are a key
+feature of modern Java. Their use is recommended for reducing boilerplate code and improving the
+clarity of functional interfaces.
+
+\subsubsection{Single-Expression Lambdas}
+
+A lambda expression whose body consists of a single expression should not be enclosed in braces
+\texttt{\{\}}. The \texttt{return} keyword is implicit and must not be specified.
+
+\begin{snippet}
+list.stream().map(s -> { return s.toUpperCase(); }); // AVOID!
+
+list.stream().map(s -> s.toUpperCase());             // OK
+\end{snippet}
+
+\subsubsection{Lambda Parameters}
+
+The types of lambda parameters should be omitted whenever the compiler can infer them. Avoid
+parentheses around a single, inferred-type parameter.
+
+\begin{snippet}
+// AVOID
+Comparator<String> c = (String s1, String s2) -> s1.compareTo(s2);
+Function<String, String> f = (s) -> s.toUpperCase();
+
+// RIGHT
+Comparator<String> c = (s1, s2) -> s1.compareTo(s2);
+Function<String, String> f = s -> s.toUpperCase();
+\end{snippet}
+
+\subsubsection{Complex Lambdas}
+
+While lambdas offer conciseness, their primary goal should be to enhance, not hinder, code clarity.
+There is no strict rule for the maximum length of a lambda; many real-world scenarios, particularly
+in asynchronous programming with \texttt{CompletableFuture} or in complex data transformations,
+involve multi-line lambdas that are perfectly acceptable.
+
+The decision to refactor a lambda into a separate private method should be guided by the following
+principles:
+
+\begin{itemize}
+\item A lambda should be extracted if its body is so long or complex that it obscures the primary
+  purpose of the enclosing method (e.g., the flow of a stream pipeline).
+\item A lambda should be extracted if the same block of logic is needed in more than one place, to
+  adhere to the DRY (Don't Repeat Yourself) principle.
+\item A lambda should be extracted if its internal logic is critical and complex enough to warrant
+  its own unit tests that can be performed in isolation.
+\end{itemize}
+
+A lambda is often appropriate for self-contained, cohesive blocks of logic, even if they are several
+lines long. It is when the logic loses this cohesion or makes the surrounding code difficult to
+follow that a refactor is warranted.
+
+For example, a stream mapping operation that involves several steps of transformation and validation
+is a prime candidate for extraction.
+
+\begin{snippet}
+// AVOID!
+List<Integer> results = strings.stream().map(s -> {
+    String trimmed = s.trim();
+    if (trimmed.length() < 2) {
+        return 0;
+    }
+    try {
+        int value = Integer.parseInt(trimmed.substring(0, 2));
+        // Further complex business logic...
+        return value * 2;
+    } catch (NumberFormatException _) {
+        LOGGER.warning(() -> "Invalid number format: " + s);
+        return -1; // return a default value on parsing failure
+    }
+}).toList();
+
+
+// RIGHT: LOGIC EXTRACTED INTO A PRIVATE METHOD.
+List<Integer> results = strings.stream().map(this::parseAndTransformString).toList();
+
+...
+
+private Integer parseAndTransformString(String s) {
+    String trimmed = s.trim();
+    if (trimmed.length() < 2) {
+        return 0;
+    }
+    try {
+        int value = Integer.parseInt(trimmed.substring(0, 2));
+        // Further complex business logic...
+        return value * 2;
+    } catch (NumberFormatException _) {
+        LOGGER.warning(() -> "Invalid number format: " + s);
+        return -1; // Return a default value on parsing failure
+    }
+}
+\end{snippet}
+
+\subsubsection{Method References}
+
+A lambda expression that does nothing more than call an existing method by name must be replaced
+with a method reference (\texttt{::}).
+
+\begin{snippet}
+// AVOID!
+stream.forEach(s -> System.out.println(s));
+stream.map(s -> s.trim());
+stream.map(s -> new BigDecimal(s));
+
+// RIGHT
+stream.forEach(System.out::println);
+stream.map(String::trim);
+stream.map(BigDecimal::new);
+\end{snippet}
+
+\subsubsection{Unused Lambda Parameters}
+
+When a lambda parameter is not used in the body of the lambda, its name should be an unnamed
+variable (\texttt{\_}).
+
+\begin{snippet}
+map.forEach((key, value) -> System.out.println(value));  // AVOID!
+
+map.forEach((_, value) -> System.out.println(value));    // OK
+\end{snippet}
+
+\subsection{Streams API}
+
+The Streams API provides a powerful mechanism for processing sequences of elements. When used
+appropriately, streams can make code more declarative and readable.
+
+Streams should be used for data processing operations where the sequence of operations is clear and
+concise. Avoid creating long or overly complex stream pipelines, as they can become difficult to
+debug and understand.
+
+A good rule of thumb is to refactor any stream pipeline that consists of more than three or four
+intermediate operations. This can be done by extracting the logic into a helper method or by
+breaking the pipeline into multiple, distinct statements.
+
+\begin{snippet}
+// AVOID!
+List<String> results = names.stream()
+        .filter(s -> s.length() > 3)
+        .map(s -> s.substring(0, 2))
+        .sorted()
+        .distinct()
+        .filter(s -> !s.equals("NO"))
+        .map(s -> s + "!")
+        .collect(Collectors.toList());
+
+// RIGHT
+List<String> results = names.stream()
+        .filter(s -> s.startsWith("A"))
+        .map(String::toUpperCase)
+        .toList();
+\end{snippet}
+
+\subsection{Text Blocks}
+
+Text blocks should be used for multi-line string literals. They improve readability for strings
+spanning multiple lines, such as embedded snippets of SQL, JSON, or HTML. Text blocks eliminate the
+visual clutter of most escape sequences and string concatenations.
+
+A text block is opened with three double-quote characters followed by a line terminator. The content
+of the string begins on the next line.
+
+\begin{snippet}
+String json = """
+        {
+          "user": "test",
+          "active": true
+        }
+        """;
+\end{snippet}
+
+This form is preferred over the equivalent string literal concatenation:
+
+\begin{snippet}
+String json = "{\n"
+        + "  \"user\": \"test\",\n"
+        + "  \"active\": true\n"
+        + "}\n";
+\end{snippet}
+
+\subsection{Pattern Matching}
+
+Pattern matching streamlines common programming tasks by combining type testing, casting, and
+variable declaration into a single, concise expression. Its use is recommended to improve code
+readability and reduce boilerplate.
+
+\subsubsection{Pattern Matching for \texttt{instanceof}}
+
+A pattern matching \texttt{instanceof} check should be used to test, cast, and bind a variable in a
+single expression. This form is preferred over a separate \texttt{instanceof} check followed by an
+explicit cast.
+
+\begin{snippet}
+// AVOID!
+if (obj instanceof String) {
+    String s = (String) obj;
+    System.out.println("String length: " + s.length());
+}
+
+// RIGHT
+if (obj instanceof String s) {
+    System.out.println("String length: " + s.length());
+}
+\end{snippet}
+
+\subsubsection{Pattern Matching for \texttt{switch}}
+
+A pattern matching \texttt{switch} should have the following form to test against multiple types
+and patterns. This is the preferred modern alternative to long \texttt{if-else-if} chains.
+
+When switching on a variable that can be \texttt{null}, prefer a \texttt{case null} label over an
+explicit \texttt{null} check guarding the switch statement. Conditional logic can be applied to a
+pattern using a \texttt{when} clause. An unnamed pattern (\texttt{\_}) should be used for components
+of a record or pattern that are intentionally ignored.
+
+\begin{snippet}
+// AVOID!
+if (obj == null) {
+    System.out.println("Object is null");
+} else if (obj instanceof String) {
+    String s = (String) obj;
+    System.out.println("String: " + s.toUpperCase());
+} else if (obj instanceof Integer) {
+    Integer i = (Integer) obj;
+    if (i > 100) {
+        System.out.println("Large integer");
+    } else {
+        /* Handle other integers. */
+    }
+} else if (obj instanceof Point) {
+    Point p = (Point) obj;
+    System.out.println("A point with x-coordinate: " + p.x());
+} else {
+    /* Handle all other types. */
+}
+
+// RIGHT
+switch (obj) {
+    case null -> System.out.println("Object is null");
+    case String s -> System.out.println("String: " + s.toUpperCase());
+    case Integer i when i > 100 -> System.out.println("Large integer");
+    case Integer i -> { /* Handle other integers */ }
+    case Point(int x, _) -> System.out.println("A point with x-coordinate: " + x);
+    default -> { /* Handle all other types */ }
+}
+\end{snippet}
+
+\begin{note}
+When used with \texttt{sealed} classes and interfaces, a pattern matching \texttt{switch} can be
+checked for exhaustiveness by the compiler, eliminating the need for a default case and preventing
+a common source of bugs.
+\end{note}
+
+\section{Code Example}
+
+\subsection{Java Source File Example}
+\label{codeexample}
+
+The following example shows how to format a Java source file containing a single public class.
+Interfaces are formatted similarly. For more information, see
+\hyperref[classesinterfaces]{"\nameref*{classesinterfaces}" on page~\pageref*{classesinterfaces}}
+and \hyperref[doccomments]{"\nameref*{doccomments}" on page~\pageref*{doccomments}}.
+
+\begin{lstlisting}[
+  language=Java,
+  morekeywords={enum, record},
+  commentstyle=\color{green!60!black}\itshape,
+  stringstyle=\color{red!40!black},
+  keywordstyle=\color{blue}\bfseries,
+  numbers=left,
+  numberstyle=\scriptsize\color{gray},
+  numbersep=5pt,
+  linewidth=\dimexpr\textwidth\relax]
+/*
+ * Copyright (c) 2025 Larry Kramer
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
+package net.larrykramer.somepackage;
+
+import module java.logging;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.lang.Math.max;
+
+/**
+ * Manages HTTP network connections for operations.
+ * <p>
+ * This class demonstrates all coding standards, including formatting, naming, comments, imports,
+ * control structures, and more.
+ */
+public class NetworkManager {
+    /** The maximum number of concurrent connections allowed. */
+    public static final int MAX_CONNECTIONS = 10;
+
+    private static final Logger LOGGER = Logger.getLogger(NetworkManager.class.getName());
+
+    private static final int DEFAULT_TIMEOUT_SECONDS = 30;
+
+    private List<String> activeConnections;
+    private int maxConnections;
+
+    /**
+     * Constructs a new NetworkManager.
+     */
+    public NetworkManager() {
+        this(MAX_CONNECTIONS);
+    }
+
+    /**
+     * Constructs a new NetworkManager with a given number of connections.
+     *
+     * @param count the maximum number of connections this manager can handle
+     * @throws IllegalArgumentException if {@code count < 0} or {@code count > MAX_CONNECTIONS}
+     */
+    public NetworkManager(int count) {
+        if (count < 0) {
+            throw new IllegalArgumentException("count cannot be negative");
+        }
+        if (count > MAX_CONNECTIONS) {
+            throw new IllegalArgumentException("count cannot be greater than " + MAX_CONNECTIONS);
+        }
+        this.maxConnections = count;
+        this.activeConnections = new ArrayList<>();
+    }
+
+    /**
+     * Opens a new network connection.
+     *
+     * @param url the URL to connect to
+     * @throws IOException if the URL is invalid or a connection cannot be established
+     */
+    public void openConnection(String url) throws IOException {
+        if (activeConnections.size() >= maxConnections) {
+            throw new IOException("Maximum connections reached.");
+        }
+
+        // Simulate opening a network connection
+        activeConnections.add(url);
+    }
+
+    /**
+     * Closes an existing network connection.
+     *
+     * @param url the URL of the connection to close
+     */
+    public void closeConnection(String url) {
+        if (activeConnections.contains(url)) {
+            activeConnections.remove(url);
+        }
+    }
+
+    /**
+     * Returns the number of active connections.
+     *
+     * @return the current number of active connections
+     */
+    public int getActiveConnectionCount() {
+        return activeConnections.size();
+    }
+
+    /**
+     * Performs a network reset based on status.
+     *
+     * @param status the current network status
+     */
+    public void handleNetworkStatus(NetworkStatus status) {
+        // The example below uses a traditional switch to demonstrate /* falls through */
+        // comments, but new code should prefer switch expressions where possible.
+        switch (status) {
+            case CONNECTED:
+                // No action needed
+                break;
+            case DISCONNECTED:
+                resetAllConnections();
+                break;
+            case ERROR:
+                resetAllConnections();
+                /* falls through */
+            default:
+                logStatus("Unknown status, performing reset.");
+                resetAllConnections();
+                break;
+        }
+    }
+
+    private void resetAllConnections() {
+        // Clear all active connections safely
+        activeConnections.clear();
+    }
+
+    private void logStatus(String message) {
+        LOGGER.info(message);
+    }
+
+    /**
+     * Calculates the optimal timeout based on load.
+     *
+     * @param connectionCount the number of active connections
+     * @return the calculated timeout in seconds
+     */
+    public static int calculateTimeout(int connectionCount) {
+        // Use a named constant instead of a magic number
+        final int timeoutFactor = 2;
+        return max(DEFAULT_TIMEOUT_SECONDS, connectionCount * timeoutFactor);
+    }
+
+    /** Represents possible network statuses. */
+    public enum NetworkStatus {
+        CONNECTED,
+        DISCONNECTED,
+        ERROR
+    }
+
+    /**
+     * This record encapsulates the connection details.
+     */
+    record ConnectionDetail(String url, long timestamp) {
+    }
+}
+\end{lstlisting}
+
+\appendix
+
+\section{Intentional Divergences and References}
+
+\subsection{Divergences from Sun/Oracle \emph{Java Code Conventions}}
+
+\begin{itemize}
+\item Line length is 100 characters (Sun/Oracle recommended 80).
+\item Indentation is spaces only; tabs are disallowed except in very specific circumstances
+  (Sun/Oracle allowed tabs, recommending they be set to 8 spaces).
+\item Import ordering and wildcard thresholds are explicitly defined (Sun/Oracle did not prescribe
+  these).
+\item One blank line is used between sections of a source file (Sun/Oracle recommended two).
+\item Variables are declared close to their first use (Sun/Oracle required declarations at the
+  beginning of a block).
+\item Avoid redundant parentheses when precedence is clear (Sun/Oracle encouraged their liberal
+  use).
+\end{itemize}
+
+\subsection{References}
+
+\begin{itemize}
+\item \href{https://www.oracle.com/docs/tech/java/codeconventions.pdf}{Sun/Oracle \emph{Java Code Conventions} (1997 Edition)}
+\item \href{https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html}{Oracle: How to Write Doc Comments for the Javadoc Tool}
+\item \href{https://openjdk.org/jeps/126}{JEP 126: Lambda Expressions \& Virtual Extension Methods}
+\item \href{https://openjdk.org/jeps/286}{JEP 286: Local-Variable Type Inference}
+\item \href{https://openjdk.org/jeps/361}{JEP 361: Switch Expressions}
+\item \href{https://openjdk.org/jeps/378}{JEP 378: Text Blocks}
+\item \href{https://openjdk.org/jeps/394}{JEP 394: Pattern Matching for instanceof}
+\item \href{https://openjdk.org/jeps/395}{JEP 395: Records}
+\item \href{https://openjdk.org/jeps/441}{JEP 441: Pattern Matching for switch}
+\item \href{https://openjdk.org/jeps/456}{JEP 456: Unnamed Variables \& Patterns}
+\item \href{https://openjdk.org/jeps/511}{JEP 511: Module Import Declarations}
+\item \href{https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/util/stream/package-summary.html}{Oracle Java 21 API: Stream API}
+\end{itemize}
+
+\end{document}
